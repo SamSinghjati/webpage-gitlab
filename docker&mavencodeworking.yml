@@ -1,0 +1,59 @@
+stages:
+  - build_docker
+  - build_maven
+
+docker_build:
+  image: docker:latest
+  stage: build_docker
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: "/certs"
+  services:
+    - docker:dind
+  script:
+    - docker login -u jayesh01 -p Lucy*22@98
+    - docker build -t theimage .
+    - docker tag theimage jayesh01/theimage:$CI_JOB_ID
+    - docker tag theimage jayesh01/theimage:latest
+    - docker push jayesh01/theimage:$CI_JOB_ID
+    - docker push jayesh01/theimage:latest
+    
+
+maven_build:
+  image: maven:latest
+  stage: build_maven
+  script:
+    - echo "Compiling the code..."
+    - mvn clean package
+    - echo "Compile complete."
+    - ls -al
+    - echo "Running tests"
+    - java -cp target/helloworld-1.1.jar com.coveros.demo.helloworld.HelloWorld
+  artifacts:
+    paths:
+    - target 
+
+    
+
+
+#image: docker:latest
+#variables:
+#  DOCKER_DRIVER: overlay2
+#  DOCKER_TLS_CERTDIR: "/certs"
+#services:
+#  - docker:dind
+
+#before_script:
+#  - docker login -u jayesh01 -p Lucy*22@98
+
+#build:
+#  stage: build
+#  script:
+#    - docker build -t theimage .
+#    - docker tag theimage jayesh01/theimage:$CI_JOB_ID
+#    - docker tag theimage jayesh01/theimage:latest
+#   - docker push jayesh01/theimage:$CI_JOB_ID
+#    - docker push jayesh01/theimage:latest
+
+
+
